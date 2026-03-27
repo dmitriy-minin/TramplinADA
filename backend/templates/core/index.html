@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Трамплин — Карьерная платформа для IT{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">🚀 Платформа для старта карьеры в IT</div>
+      <h1>Найди свою первую работу в IT с Трамплином</h1>
+      <p>Стажировки, вакансии, менторство и карьерные мероприятия — всё в одном месте. Более {{ total_opps }} возможностей для роста.</p>
+      <div class="hero-actions">
+        <a href="/opportunities/" class="btn btn-lg hero-btn-white">Смотреть вакансии</a>
+        {% if not user.is_authenticated %}
+        <a href="/auth/register/" class="btn btn-lg hero-btn-outline">Зарегистрироваться</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Search -->
+<section class="search-section">
+  <div class="container">
+    <form method="get" action="/opportunities/" class="search-bar">
+      <input type="text" name="q" class="form-control" placeholder="🔍 Поиск по вакансиям, навыкам, компаниям..." value="">
+      <select name="opp_type" class="form-control">
+        <option value="">Все типы</option>
+        {% for val, label in type_choices %}
+          <option value="{{ val }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="work_format" class="form-control">
+        <option value="">Любой формат</option>
+        {% for val, label in format_choices %}
+          <option value="{{ val }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" name="city" class="form-control" placeholder="🏙 Город" style="max-width:160px">
+      <button type="submit" class="btn btn-primary">Найти</button>
+    </form>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      {% for tag in tags %}
+        <a href="/opportunities/?tags={{ tag.pk }}" class="badge badge-skill" style="text-decoration:none">{{ tag.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section style="background:var(--white);padding:24px 0;border-bottom:1px solid var(--gray-200)">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">{{ total_opps }}</div>
+        <div class="stat-label">Активных вакансий</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">50+</div>
+        <div class="stat-label">Компаний-партнёров</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">1 200+</div>
+        <div class="stat-label">Соискателей</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">Студентов нашли работу</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Map + List toggle -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Вакансии и мероприятия</h2>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" id="btnMap" onclick="showMap()">🗺 Карта</button>
+          <button class="view-toggle-btn" id="btnList" onclick="showList()">☰ Список</button>
+        </div>
+        <a href="/opportunities/" class="btn btn-ghost btn-sm">Все вакансии →</a>
+      </div>
+    </div>
+
+    <!-- Map View -->
+    <div id="mapView">
+      <div id="map"></div>
+      <p class="text-sm text-muted mt-1" style="text-align:center">
+        Нажмите на маркер, чтобы увидеть детали. Офлайн-позиции показаны по точному адресу, онлайн — по городу работодателя.
+      </p>
+    </div>
+
+    <!-- List View -->
+    <div id="listView" class="hidden">
+      {% if recent_opps %}
+        <div class="opp-grid">
+          {% for opp in recent_opps %}
+            {% include "opportunities/_card.html" with opp=opp %}
+          {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+          <a href="/opportunities/" class="btn btn-primary">Смотреть все вакансии</a>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="icon">🔍</div>
+          <h3>Вакансии появятся совсем скоро</h3>
+          <p>Работодатели уже добавляют первые позиции</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section style="background:var(--white);padding:60px 0">
+  <div class="container">
+    <h2 class="section-title text-center mb-3">Как работает Трамплин</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:32px">
+      {% for icon, title, desc in steps %}
+        <div style="text-align:center;padding:24px">
+          <div style="font-size:3rem;margin-bottom:16px">{{ icon }}</div>
+          <h3 style="font-weight:700;margin-bottom:8px">{{ title }}</h3>
+          <p style="color:var(--gray-500);font-size:0.9rem">{{ desc }}</p>
+        </div>
+      {% empty %}
+        {% for item in "1234" %}
+          <div style="text-align:center;padding:24px">
+            {% if forloop.counter == 1 %}
+              <div style="font-size:3rem;margin-bottom:16px">👤</div>
+              <h3 style="font-weight:700;margin-bottom:8px">Создай профиль</h3>
+              <p style="color:var(--gray-500);font-size:0.9rem">Укажи навыки, опыт и загрузи резюме за 5 минут</p>
+            {% elif forloop.counter == 2 %}
+              <div style="font-size:3rem;margin-bottom:16px">🔍</div>
+              <h3 style="font-weight:700;margin-bottom:8px">Найди возможность</h3>
+              <p style="color:var(--gray-500);font-size:0.9rem">Фильтруй вакансии по навыкам, формату и зарплате</p>
+            {% elif forloop.counter == 3 %}
+              <div style="font-size:3rem;margin-bottom:16px">📨</div>
+              <h3 style="font-weight:700;margin-bottom:8px">Откликнись</h3>
+              <p style="color:var(--gray-500);font-size:0.9rem">Отправь отклик с сопроводительным письмом</p>
+            {% else %}
+              <div style="font-size:3rem;margin-bottom:16px">🎯</div>
+              <h3 style="font-weight:700;margin-bottom:8px">Начни карьеру</h3>
+              <p style="color:var(--gray-500);font-size:0.9rem">Получи оффер и запусти свою карьеру в IT</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+{% if not user.is_authenticated %}
+<section style="background:linear-gradient(135deg,#6366f1,#7c3aed);padding:60px 0;text-align:center;color:white">
+  <div class="container">
+    <h2 style="font-size:2rem;font-weight:800;margin-bottom:12px">Готов стартовать?</h2>
+    <p style="opacity:.9;margin-bottom:28px;font-size:1.1rem">Присоединяйся к тысячам студентов, которые уже нашли работу через Трамплин</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="/auth/register/?role=applicant" class="btn btn-lg hero-btn-white">Я соискатель</a>
+      <a href="/auth/register/?role=employer" class="btn btn-lg hero-btn-outline">Я работодатель</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// View toggle
+function showMap() {
+  document.getElementById('mapView').classList.remove('hidden');
+  document.getElementById('listView').classList.add('hidden');
+  document.getElementById('btnMap').classList.add('active');
+  document.getElementById('btnList').classList.remove('active');
+  if (window._map) window._map.invalidateSize();
+}
+function showList() {
+  document.getElementById('mapView').classList.add('hidden');
+  document.getElementById('listView').classList.remove('hidden');
+  document.getElementById('btnList').classList.add('active');
+  document.getElementById('btnMap').classList.remove('active');
+}
+
+// Map
+const typeColors = {
+  internship: '#3b82f6',
+  vacancy: '#10b981',
+  mentoring: '#8b5cf6',
+  event: '#f59e0b',
+};
+
+function makeIcon(type) {
+  const color = typeColors[type] || '#6366f1';
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 36'><path d='M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z' fill='${color}'/><circle cx='12' cy='12' r='5' fill='white'/></svg>`;
+  return L.divIcon({
+    html: `<div style="width:28px;height:40px">${svg}</div>`,
+    iconSize: [28, 40],
+    iconAnchor: [14, 40],
+    popupAnchor: [0, -42],
+    className: '',
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const map = L.map('map').setView([51.18, 71.45], 5);
+  window._map = map;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18,
+  }).addTo(map);
+
+  fetch('/api/map-markers/')
+    .then(r => r.json())
+    .then(data => {
+      data.markers.forEach(m => {
+        const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.opp_type) }).addTo(map);
+        const tags = m.tags.map(t => `<span class="badge badge-skill" style="font-size:0.7rem">${t}</span>`).join(' ');
+        marker.bindPopup(`
+          <div class="map-popup">
+            <h4>${m.title}</h4>
+            <div class="company">🏢 ${m.company}</div>
+            <div class="salary">💰 ${m.salary}</div>
+            <div style="margin-bottom:8px;font-size:0.8rem;color:#6b7280">📍 ${m.city || ''} · ${m.opp_type_display}</div>
+            <div style="margin-bottom:10px">${tags}</div>
+            <a href="${m.url}" class="btn btn-primary btn-sm" style="display:inline-flex">Подробнее →</a>
+          </div>
+        `);
+      });
+    })
+    .catch(() => {});
+});
+</script>
+{% endblock %}

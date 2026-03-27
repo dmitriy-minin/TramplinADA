@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Регистрация соискателя — Трамплин{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:4px">
+      <span style="font-size:2.5rem">🎓</span>
+    </div>
+    <h1 style="text-align:center">Регистрация соискателя</h1>
+    <p class="subtitle" style="text-align:center">Создайте профиль и начните поиск возможностей</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Email <span class="req">*</span></label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="form-error">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Отображаемое имя <span class="req">*</span></label>
+        {{ form.display_name }}
+        <div class="form-hint">Как вас будут видеть другие пользователи</div>
+        {% if form.display_name.errors %}<div class="form-error">{{ form.display_name.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Пароль <span class="req">*</span></label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<div class="form-error">{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Повторите пароль <span class="req">*</span></label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+      {% if form.non_field_errors %}
+        <div class="alert alert--error mb-2">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:8px">Создать аккаунт</button>
+    </form>
+
+    <p style="text-align:center;margin-top:20px;color:var(--gray-500);font-size:0.9rem">
+      Уже есть аккаунт? <a href="/auth/login/">Войти</a>
+    </p>
+    <p style="text-align:center;margin-top:8px;font-size:0.85rem">
+      <a href="/auth/register/">← Назад к выбору роли</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

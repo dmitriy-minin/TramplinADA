@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Кабинет работодателя — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="dashboard">
+
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-card" style="text-align:center;padding:28px 20px">
+      <div style="font-size:3rem;margin-bottom:10px">🏢</div>
+      <div style="font-weight:700;font-size:1.05rem">{{ company.name }}</div>
+      <div style="margin-top:8px">
+        {% if company.status == 'verified' %}
+          <span class="badge badge-verified">✓ Верифицирована</span>
+        {% elif company.status == 'pending' %}
+          <span class="badge badge-pending">⏳ На проверке</span>
+        {% else %}
+          <span class="badge badge-rejected">✗ Отклонена</span>
+        {% endif %}
+      </div>
+      {% if company.verification_note and company.status == 'rejected' %}
+        <div style="margin-top:10px;font-size:0.82rem;color:var(--danger);background:#fee2e2;padding:8px;border-radius:var(--radius-sm)">
+          {{ company.verification_note }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-card">
+      <ul class="sidebar-nav">
+        <li><a href="/dashboard/employer/"><span class="icon">📊</span> Мои вакансии</a></li>
+        {% if company.is_verified %}
+        <li><a href="/dashboard/employer/create/"><span class="icon">➕</span> Создать вакансию</a></li>
+        {% endif %}
+        <li><a href="/dashboard/employer/company/"><span class="icon">✏️</span> Данные компании</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="dashboard-main">
+
+    {% if not company.is_verified %}
+    <div class="alert alert--warning">
+      <div>
+        <strong>⏳ Верификация в процессе</strong><br>
+        <span style="font-size:0.9rem">Куратор платформы проверяет данные вашей компании. После верификации вы сможете создавать вакансии. Обычно это занимает до 24 часов.</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="stat-card">
+        <div class="stat-value">{{ opportunities.count }}</div>
+        <div class="stat-label">Активных вакансий</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ total_applications }}</div>
+        <div class="stat-label">Всего откликов</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ company.get_industry_display }}</div>
+        <div class="stat-label">Отрасль</div>
+      </div>
+    </div>
+
+    <!-- Opportunities table -->
+    <div class="card">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <strong>Мои вакансии и события</strong>
+          <form method="get" style="display:flex;gap:6px">
+            <select name="status" class="form-control" style="font-size:0.85rem;padding:4px 8px;height:32px"
+              onchange="this.form.submit()">
+              <option value="">Все статусы</option>
+              {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+        {% if company.is_verified %}
+          <a href="/dashboard/employer/create/" class="btn btn-primary btn-sm">+ Создать</a>
+        {% endif %}
+      </div>
+
+      {% if opportunities %}
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Название</th>
+              <th>Тип</th>
+              <th>Формат</th>
+              <th>Статус</th>
+              <th>Модерация</th>
+              <th>Отклики</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for opp in opportunities %}
+            <tr>
+              <td style="font-weight:600;max-width:220px">
+                <a href="/opportunities/{{ opp.pk }}/" style="color:var(--gray-900)">{{ opp.title }}</a>
+              </td>
+              <td><span class="badge badge-type-{{ opp.opp_type }}">{{ opp.get_opp_type_display }}</span></td>
+              <td><span class="badge badge-format-{{ opp.work_format }}">{{ opp.get_work_format_display }}</span></td>
+              <td>
+                <span class="status-{{ opp.status }}">{{ opp.get_status_display }}</span>
+              </td>
+              <td>
+                {% if opp.is_moderated %}
+                  <span class="badge badge-verified">✓ Одобрено</span>
+                {% else %}
+                  <span class="badge badge-pending">⏳ На проверке</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="/dashboard/employer/{{ opp.pk }}/applicants/" style="color:var(--primary);font-weight:600">
+                  {{ opp.applications.count }} чел.
+                </a>
+              </td>
+              <td>
+                <a href="/dashboard/employer/{{ opp.pk }}/edit/" class="btn btn-ghost btn-sm">Изменить</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <h3>Вакансий пока нет</h3>
+        {% if company.is_verified %}
+          <a href="/dashboard/employer/create/" class="btn btn-primary" style="margin-top:16px">Создать первую вакансию</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Вход — Трамплин{% endblock %}
+{% block body_class %}auth-bg{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:8px">
+      <a href="/" style="font-size:2rem;text-decoration:none">🚀</a>
+    </div>
+    <h1 style="text-align:center">Добро пожаловать</h1>
+    <p class="subtitle" style="text-align:center">Войдите в свой аккаунт Трамплин</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Email <span class="req">*</span></label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="form-error">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Пароль <span class="req">*</span></label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div class="form-error">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+      {% if form.non_field_errors %}
+        <div class="alert alert--error mb-2">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary btn-full btn-lg">Войти</button>
+    </form>
+
+    <div class="auth-divider"><span>или</span></div>
+
+    <div style="text-align:center">
+      <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:12px">Ещё нет аккаунта?</p>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <a href="/auth/register/?role=applicant" class="btn btn-ghost">Я соискатель</a>
+        <a href="/auth/register/?role=employer" class="btn btn-ghost">Я работодатель</a>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--gray-200);text-align:center">
+      <p style="font-size:0.8rem;color:var(--gray-400)">Куратор платформы? <a href="/auth/login/?curator=1">Войти как куратор →</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}Мой кабинет — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="dashboard">
+
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-card" style="text-align:center;padding:28px 20px">
+      <div class="profile-avatar" style="margin:0 auto 14px">
+        {{ user.display_name|first|upper }}
+      </div>
+      <div style="font-weight:700;font-size:1.05rem">{{ user.display_name }}</div>
+      <div style="color:var(--gray-500);font-size:0.85rem;margin-top:4px">{{ user.email }}</div>
+      {% if user.university %}
+        <div style="color:var(--gray-500);font-size:0.82rem;margin-top:4px">🎓 {{ user.university }}</div>
+      {% endif %}
+      {% if user.graduation_year %}
+        <div style="color:var(--gray-500);font-size:0.82rem">Курс/год: {{ user.graduation_year }}</div>
+      {% endif %}
+      <div style="margin-top:12px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+        {% if user.profile_public %}
+          <span class="badge badge-verified">Профиль открыт</span>
+        {% else %}
+          <span class="badge badge-gray">Профиль скрыт</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <ul class="sidebar-nav">
+        <li><a href="#applications" class="active"><span class="icon">📨</span> Мои отклики</a></li>
+        <li><a href="#favorites"><span class="icon">❤️</span> Избранное</a></li>
+        <li><a href="#contacts"><span class="icon">👥</span> Контакты</a></li>
+        <li><a href="/dashboard/applicant/profile/"><span class="icon">✏️</span> Редактировать профиль</a></li>
+        <li><a href="/opportunities/"><span class="icon">🔍</span> Найти вакансии</a></li>
+      </ul>
+    </div>
+
+    {% if user.skills %}
+    <div class="sidebar-card">
+      <div style="font-weight:700;margin-bottom:10px;font-size:0.9rem">Мои навыки</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        {% for skill in user.skills.split(',') %}
+          <span class="badge badge-skill">{{ skill|trim }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if user.github_url or user.portfolio_url or user.resume_url %}
+    <div class="sidebar-card">
+      <div style="font-weight:700;margin-bottom:10px;font-size:0.9rem">Ссылки</div>
+      {% if user.github_url %}
+        <a href="{{ user.github_url }}" target="_blank" class="btn btn-ghost btn-sm btn-full mb-1">GitHub →</a>
+      {% endif %}
+      {% if user.portfolio_url %}
+        <a href="{{ user.portfolio_url }}" target="_blank" class="btn btn-ghost btn-sm btn-full mb-1">Портфолио →</a>
+      {% endif %}
+      {% if user.resume_url %}
+        <a href="{{ user.resume_url }}" target="_blank" class="btn btn-ghost btn-sm btn-full">Резюме →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </aside>
+
+  <!-- Main -->
+  <div class="dashboard-main">
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="stat-card">
+        <div class="stat-value">{{ applications.count }}</div>
+        <div class="stat-label">Всего откликов</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ favorites.count }}</div>
+        <div class="stat-label">В избранном</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ contacts.count }}</div>
+        <div class="stat-label">Контактов</div>
+      </div>
+    </div>
+
+    <!-- Pending contact requests -->
+    {% with pending=user.pending_requests.all %}
+    {% if pending %}
+    <div class="card">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+        <strong>Входящие заявки в контакты</strong>
+        <span class="badge badge-type-internship">{{ pending.count }}</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        {% for sender in pending %}
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--gray-100)">
+          <div class="profile-avatar" style="width:40px;height:40px;font-size:1rem">{{ sender.display_name|first|upper }}</div>
+          <div style="flex:1">
+            <div style="font-weight:600">{{ sender.display_name }}</div>
+            <div style="font-size:0.82rem;color:var(--gray-500)">{{ sender.university|default:"" }}</div>
+          </div>
+          <form method="post" action="/auth/contact/{{ sender.pk }}/accept/">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Принять</button>
+          </form>
+          <a href="/profile/{{ sender.pk }}/" class="btn btn-ghost btn-sm">Профиль</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Applications -->
+    <div class="card" id="applications">
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+        <strong>История откликов</strong>
+        <a href="/opportunities/" class="btn btn-primary btn-sm">+ Найти вакансии</a>
+      </div>
+      {% if applications %}
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Позиция</th>
+              <th>Компания</th>
+              <th>Тип</th>
+              <th>Дата</th>
+              <th>Статус</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in applications %}
+            <tr>
+              <td style="font-weight:600">{{ app.opportunity.title }}</td>
+              <td>{{ app.opportunity.company.name }}</td>
+              <td><span class="badge badge-type-{{ app.opportunity.opp_type }}">{{ app.opportunity.get_opp_type_display }}</span></td>
+              <td class="text-muted">{{ app.applied_at|date:"d.m.Y" }}</td>
+              <td>
+                {% if app.status == 'pending' %}<span class="badge badge-pending">На рассмотрении</span>
+                {% elif app.status == 'accepted' %}<span class="badge badge-verified">Принят</span>
+                {% elif app.status == 'rejected' %}<span class="badge badge-rejected">Отклонён</span>
+                {% else %}<span class="badge badge-gray">В резерве</span>{% endif %}
+              </td>
+              <td><a href="/opportunities/{{ app.opportunity.pk }}/" class="btn btn-ghost btn-sm">Открыть</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <h3>Откликов пока нет</h3>
+        <p>Найдите подходящую вакансию и откликнитесь!</p>
+        <a href="/opportunities/" class="btn btn-primary" style="margin-top:16px">Смотреть вакансии</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Favorites -->
+    <div class="card" id="favorites">
+      <div class="card-header"><strong>Избранное</strong></div>
+      {% if favorites %}
+      <div class="card-body" style="padding:0">
+        {% for app in favorites %}
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--gray-100)">
+          <div style="font-size:1.5rem">🏢</div>
+          <div style="flex:1">
+            <div style="font-weight:600"><a href="/opportunities/{{ app.opportunity.pk }}/">{{ app.opportunity.title }}</a></div>
+            <div style="font-size:0.85rem;color:var(--gray-500)">{{ app.opportunity.company.name }} · {{ app.opportunity.get_opp_type_display }}</div>
+          </div>
+          <span class="badge badge-format-{{ app.opportunity.work_format }}">{{ app.opportunity.get_work_format_display }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:32px">
+        <div class="icon">❤️</div>
+        <h3>Избранное пусто</h3>
+        <p>Добавляйте интересные вакансии в избранное</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Contacts -->
+    <div class="card" id="contacts">
+      <div class="card-header"><strong>Профессиональные контакты</strong></div>
+      {% if contacts %}
+      <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px">
+        {% for contact in contacts %}
+        <a href="/profile/{{ contact.pk }}/" style="text-decoration:none">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200)">
+            <div class="profile-avatar" style="width:40px;height:40px;font-size:1rem;flex-shrink:0">{{ contact.display_name|first|upper }}</div>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;color:var(--gray-900)">{{ contact.display_name }}</div>
+              <div style="font-size:0.78rem;color:var(--gray-500)">{{ contact.university|default:"" }}</div>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:32px">
+        <div class="icon">👥</div>
+        <h3>Контактов пока нет</h3>
+        <p>Находите других специалистов и расширяйте сеть</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+</div>
+{% endblock %}

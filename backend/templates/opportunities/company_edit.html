@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Данные компании — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container--md" style="padding-top:32px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
+    <a href="/dashboard/employer/" class="btn btn-ghost btn-sm">← Назад</a>
+    <h1 style="font-size:1.5rem;font-weight:800">Данные компании</h1>
+    <span class="badge {% if company.status == 'verified' %}badge-verified{% elif company.status == 'pending' %}badge-pending{% else %}badge-rejected{% endif %}">
+      {{ company.get_status_display }}
+    </span>
+  </div>
+
+  {% if company.status == 'rejected' and company.verification_note %}
+  <div class="alert alert--error mb-3">
+    <div><strong>Причина отклонения:</strong> {{ company.verification_note }}</div>
+  </div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="card">
+      <div class="card-header"><strong>🏢 Основная информация</strong></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Название компании</label>
+            {{ form.name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Отрасль</label>
+            {{ form.industry }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          {{ form.description }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Город</label>
+          {{ form.city }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header"><strong>🔗 Ссылки и контакты</strong></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Сайт</label>
+            {{ form.website }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">LinkedIn</label>
+            {{ form.linkedin }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Telegram</label>
+            {{ form.telegram }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">HeadHunter</label>
+            {{ form.hh_url }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header"><strong>✅ Верификация</strong></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Корпоративная почта</label>
+            {{ form.corporate_email }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">ИНН / БИН</label>
+            {{ form.inn }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px">
+      <button type="submit" class="btn btn-primary btn-lg">Сохранить</button>
+      <a href="/dashboard/employer/" class="btn btn-ghost btn-lg">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

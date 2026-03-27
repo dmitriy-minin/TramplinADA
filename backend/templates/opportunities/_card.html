@@ -1,0 +1,48 @@
+{% load static %}
+<div class="opp-card">
+  <div class="opp-card-header">
+    <div class="opp-card-logo">
+      {% if opp.company.logo %}
+        <img src="{{ opp.company.logo.url }}" alt="{{ opp.company.name }}">
+      {% else %}
+        🏢
+      {% endif %}
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="opp-card-title">
+        <a href="/opportunities/{{ opp.pk }}/" style="color:inherit">{{ opp.title }}</a>
+      </div>
+      <div class="opp-card-company">{{ opp.company.name }}</div>
+    </div>
+  </div>
+
+  <div class="opp-card-badges">
+    <span class="badge badge-type-{{ opp.opp_type }}">{{ opp.get_opp_type_display }}</span>
+    <span class="badge badge-format-{{ opp.work_format }}">{{ opp.get_work_format_display }}</span>
+  </div>
+
+  {% if opp.salary_min or opp.salary_max %}
+    <div class="opp-card-salary">💰 {{ opp.salary_display }}</div>
+  {% endif %}
+
+  <div class="opp-card-location">
+    📍 {% if opp.work_format == 'remote' or opp.work_format == 'online' %}
+      {{ opp.city|default:opp.company.city|default:"Удалённо" }}
+    {% else %}
+      {{ opp.city|default:"" }}{% if opp.address %}, {{ opp.address|truncatechars:40 }}{% endif %}
+    {% endif %}
+  </div>
+
+  {% if opp.tags.all %}
+    <div class="opp-card-tags">
+      {% for tag in opp.tags.all|slice:":5" %}
+        <span class="badge badge-{% if tag.tag_type == 'level' %}level{% else %}skill{% endif %}">{{ tag.name }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="opp-card-footer">
+    <span class="text-sm text-muted">{{ opp.published_at|date:"d.m.Y" }}</span>
+    <a href="/opportunities/{{ opp.pk }}/" class="btn btn-primary btn-sm">Подробнее</a>
+  </div>
+</div>

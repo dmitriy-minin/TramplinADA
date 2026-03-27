@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Теги — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:32px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/curator/" class="btn btn-ghost btn-sm">← Дашборд</a>
+    <h1 style="font-size:1.4rem;font-weight:800">Управление тегами</h1>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start">
+
+    <!-- Tags list -->
+    <div class="card">
+      <div class="card-header"><strong>Все теги ({{ tags.count }})</strong></div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Название</th>
+              <th>Тип</th>
+              <th>Системный</th>
+              <th>Автор</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tag in tags %}
+            <tr>
+              <td>
+                <span class="badge {% if tag.tag_type == 'skill' %}badge-skill{% elif tag.tag_type == 'level' %}badge-level{% else %}badge-gray{% endif %}">
+                  {{ tag.name }}
+                </span>
+              </td>
+              <td style="font-size:0.88rem;color:var(--gray-500)">{{ tag.get_tag_type_display }}</td>
+              <td>{% if tag.is_system %}<span class="badge badge-verified">Системный</span>{% endif %}</td>
+              <td style="font-size:0.82rem;color:var(--gray-500)">{{ tag.created_by.display_name|default:"Система" }}</td>
+              <td>
+                {% if not tag.is_system %}
+                <form method="post" action="/curator/tags/{{ tag.pk }}/delete/"
+                  onsubmit="return confirm('Удалить тег «{{ tag.name }}»?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                </form>
+                {% else %}
+                <span style="font-size:0.78rem;color:var(--gray-400)">Нельзя удалить</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:24px">Тегов нет</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add tag form -->
+    <div class="card" style="position:sticky;top:80px">
+      <div class="card-header"><strong>➕ Добавить тег</strong></div>
+      <div class="card-body">
+        <form method="post" action="/curator/tags/create/" novalidate>
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Название тега <span class="req">*</span></label>
+            {{ form.name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Тип <span class="req">*</span></label>
+            {{ form.tag_type }}
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Создать тег</button>
+        </form>
+
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
+          <div style="font-size:0.85rem;color:var(--gray-500);margin-bottom:12px">
+            <strong>Типы тегов:</strong>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:0.82rem;color:var(--gray-600)">
+            <div><span class="badge badge-skill">Навык</span> — технологии: Python, React, SQL...</div>
+            <div><span class="badge badge-level">Уровень</span> — Junior, Middle, Senior...</div>
+            <div><span class="badge badge-gray">Занятость</span> — полная, частичная, проект</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

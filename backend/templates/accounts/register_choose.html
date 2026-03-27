@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Регистрация — Трамплин{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div style="width:100%;max-width:600px">
+    <div style="text-align:center;margin-bottom:32px">
+      <a href="/" style="font-size:2.5rem;text-decoration:none">🚀</a>
+      <h1 style="font-size:2rem;font-weight:800;margin-top:12px">Присоединяйся к Трамплину</h1>
+      <p style="color:var(--gray-500)">Выбери свою роль на платформе</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <!-- Applicant -->
+      <a href="/auth/register/applicant/" class="card" style="text-decoration:none;text-align:center;padding:36px 24px;border:2px solid transparent;transition:all 0.2s">
+        <div style="font-size:3.5rem;margin-bottom:16px">🎓</div>
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Соискатель</h2>
+        <p style="color:var(--gray-500);font-size:0.9rem;line-height:1.5">Студент или выпускник в поиске стажировки, первой работы или ментора</p>
+        <div class="btn btn-primary btn-full" style="margin-top:20px">Зарегистрироваться</div>
+      </a>
+
+      <!-- Employer -->
+      <a href="/auth/register/employer/" class="card" style="text-decoration:none;text-align:center;padding:36px 24px;border:2px solid transparent;transition:all 0.2s">
+        <div style="font-size:3.5rem;margin-bottom:16px">🏢</div>
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Работодатель</h2>
+        <p style="color:var(--gray-500);font-size:0.9rem;line-height:1.5">Компания или ИП — размещайте вакансии, стажировки и находите таланты</p>
+        <div class="btn btn-primary btn-full" style="margin-top:20px">Зарегистрироваться</div>
+      </a>
+    </div>
+
+    <p style="text-align:center;margin-top:24px;color:var(--gray-500);font-size:0.9rem">
+      Уже есть аккаунт? <a href="/auth/login/">Войти</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

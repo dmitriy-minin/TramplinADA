@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if opp %}Редактировать{% else %}Создать{% endif %} вакансию — Трамплин{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<div class="container--md" style="padding-top:32px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
+    <a href="/dashboard/employer/" class="btn btn-ghost btn-sm">← Назад</a>
+    <h1 style="font-size:1.5rem;font-weight:800">
+      {% if opp %}Редактировать: {{ opp.title }}{% else %}Создать вакансию / мероприятие{% endif %}
+    </h1>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <!-- Basic info -->
+    <div class="card">
+      <div class="card-header"><strong>📋 Основная информация</strong></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Название позиции / мероприятия <span class="req">*</span></label>
+          {{ form.title }}
+          {% if form.title.errors %}<div class="form-error">{{ form.title.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Тип <span class="req">*</span></label>
+            {{ form.opp_type }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Формат <span class="req">*</span></label>
+            {{ form.work_format }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Статус</label>
+            {{ form.status }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Срок действия / дата мероприятия</label>
+            {{ form.expires_at }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Дата и время мероприятия</label>
+          {{ form.event_date }}
+          <div class="form-hint">Только для карьерных мероприятий</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Описание <span class="req">*</span></label>
+          {{ form.description }}
+          <div class="form-hint">Опишите позицию, требования к кандидату, условия работы</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="card mt-3">
+      <div class="card-header"><strong>📍 Расположение</strong></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Город</label>
+            {{ form.city }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Адрес офиса</label>
+            {{ form.address }}
+            <div class="form-hint">Для офисных и гибридных позиций</div>
+          </div>
+        </div>
+        {{ form.latitude }}
+        {{ form.longitude }}
+        <div id="locationMap" style="height:300px;border-radius:var(--radius-sm);margin-top:8px;border:1px solid var(--gray-200)"></div>
+        <p class="form-hint" style="margin-top:6px">Нажмите на карту для установки точки или введите адрес выше</p>
+      </div>
+    </div>
+
+    <!-- Salary -->
+    <div class="card mt-3">
+      <div class="card-header"><strong>💰 Зарплата</strong></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 120px;gap:12px">
+          <div class="form-group">
+            <label class="form-label">От</label>
+            {{ form.salary_min }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">До</label>
+            {{ form.salary_max }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Валюта</label>
+            {{ form.salary_currency }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="card mt-3">
+      <div class="card-header"><strong>🏷 Теги</strong></div>
+      <div class="card-body">
+        {% for type_key, type_label in tag_type_labels.items|default:"" %}{% endfor %}
+        {% if tags_by_type.skill %}
+        <div class="form-group">
+          <label class="form-label">Технологии / Навыки</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            {% for tag in tags_by_type.skill %}
+              <label style="cursor:pointer">
+                <input type="checkbox" name="tags" value="{{ tag.pk }}"
+                  {% if tag in form.instance.tags.all %}checked{% endif %}
+                  style="display:none" class="tag-checkbox">
+                <span class="badge badge-skill tag-label" data-id="{{ tag.pk }}"
+                  style="cursor:pointer;border:2px solid transparent;transition:all .15s">{{ tag.name }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if tags_by_type.level %}
+        <div class="form-group">
+          <label class="form-label">Уровень</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            {% for tag in tags_by_type.level %}
+              <label style="cursor:pointer">
+                <input type="checkbox" name="tags" value="{{ tag.pk }}"
+                  {% if tag in form.instance.tags.all %}checked{% endif %}
+                  style="display:none" class="tag-checkbox">
+                <span class="badge badge-level tag-label" data-id="{{ tag.pk }}"
+                  style="cursor:pointer;border:2px solid transparent;transition:all .15s">{{ tag.name }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if tags_by_type.employment %}
+        <div class="form-group">
+          <label class="form-label">Тип занятости</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            {% for tag in tags_by_type.employment %}
+              <label style="cursor:pointer">
+                <input type="checkbox" name="tags" value="{{ tag.pk }}"
+                  {% if tag in form.instance.tags.all %}checked{% endif %}
+                  style="display:none" class="tag-checkbox">
+                <span class="badge badge-gray tag-label" data-id="{{ tag.pk }}"
+                  style="cursor:pointer;border:2px solid transparent;transition:all .15s">{{ tag.name }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Contacts -->
+    <div class="card mt-3">
+      <div class="card-header"><strong>📞 Контактная информация</strong></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email для откликов</label>
+            {{ form.contact_email }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Телефон</label>
+            {{ form.contact_phone }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ссылка на вакансию (внешняя)</label>
+          {{ form.external_url }}
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px">
+      <button type="submit" class="btn btn-primary btn-lg">{{ action }} вакансию</button>
+      <a href="/dashboard/employer/" class="btn btn-ghost btn-lg">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Tag toggle visual
+document.querySelectorAll('.tag-checkbox').forEach(cb => {
+  const label = cb.nextElementSibling;
+  function update() {
+    label.style.borderColor = cb.checked ? 'var(--primary)' : 'transparent';
+    label.style.opacity = cb.checked ? '1' : '0.7';
+  }
+  update();
+  cb.addEventListener('change', update);
+});
+
+// Location map
+const latInput = document.querySelector('input[name="latitude"]');
+const lngInput = document.querySelector('input[name="longitude"]');
+const map = L.map('locationMap').setView([51.18, 71.45], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap', maxZoom:18 }).addTo(map);
+let marker = null;
+if (latInput.value && lngInput.value) {
+  marker = L.marker([parseFloat(latInput.value), parseFloat(lngInput.value)]).addTo(map);
+  map.setView([parseFloat(latInput.value), parseFloat(lngInput.value)], 13);
+}
+map.on('click', function(e) {
+  if (marker) marker.remove();
+  marker = L.marker(e.latlng).addTo(map);
+  latInput.value = e.latlng.lat.toFixed(6);
+  lngInput.value = e.latlng.lng.toFixed(6);
+});
+</script>
+{% endblock %}

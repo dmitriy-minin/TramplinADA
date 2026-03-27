@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Модерация вакансий — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:32px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+    <a href="/curator/" class="btn btn-ghost btn-sm">← Дашборд</a>
+    <h1 style="font-size:1.4rem;font-weight:800;flex:1">Модерация вакансий</h1>
+    <form method="get" style="display:flex;gap:8px">
+      <input type="text" name="q" class="form-control" placeholder="Поиск..." value="{{ q }}" style="max-width:200px">
+      <select name="status" class="form-control" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">Ожидают модерации</option>
+        {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-ghost">Найти</button>
+    </form>
+  </div>
+
+  {% if opportunities %}
+  <div style="display:flex;flex-direction:column;gap:16px">
+    {% for opp in opportunities %}
+    <div class="card">
+      <div class="card-body">
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:240px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+              <span class="badge badge-type-{{ opp.opp_type }}">{{ opp.get_opp_type_display }}</span>
+              <span class="badge badge-format-{{ opp.work_format }}">{{ opp.get_work_format_display }}</span>
+              {% if opp.is_moderated %}
+                <span class="badge badge-verified">✓ Одобрено</span>
+              {% else %}
+                <span class="badge badge-pending">⏳ На модерации</span>
+              {% endif %}
+            </div>
+            <h3 style="font-weight:700;font-size:1.05rem;margin-bottom:4px">{{ opp.title }}</h3>
+            <div style="font-size:0.88rem;color:var(--gray-500);margin-bottom:10px">
+              🏢 {{ opp.company.name }} · 📅 {{ opp.published_at|date:"d.m.Y" }}
+              {% if opp.salary_display != 'По договорённости' %} · 💰 {{ opp.salary_display }}{% endif %}
+            </div>
+            <div style="font-size:0.88rem;color:var(--gray-600);line-height:1.6">
+              {{ opp.description|truncatechars:300 }}
+            </div>
+            {% if opp.tags.all %}
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+              {% for tag in opp.tags.all %}
+                <span class="badge badge-skill" style="font-size:0.75rem">{{ tag.name }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+
+          <form method="post" action="/curator/opportunities/{{ opp.pk }}/moderate/"
+            style="min-width:220px;display:flex;flex-direction:column;gap:8px;background:var(--gray-50);padding:16px;border-radius:var(--radius-sm)">
+            {% csrf_token %}
+            <label class="form-label" style="margin-bottom:0">Примечание</label>
+            <textarea name="note" class="form-control" rows="2"
+              placeholder="Причина отклонения...">{{ opp.moderation_note }}</textarea>
+            <div style="display:flex;gap:8px">
+              <button type="submit" name="action" value="approve" class="btn btn-secondary btn-sm" style="flex:1">✅ Одобрить</button>
+              <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm" style="flex:1">❌ Отклонить</button>
+            </div>
+            <a href="/opportunities/{{ opp.pk }}/" target="_blank" class="btn btn-ghost btn-sm" style="text-align:center">Открыть →</a>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">✅</div>
+    <h3>Нет вакансий на модерации</h3>
+    <p>Все вакансии проверены</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Верификация компаний — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:32px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+    <a href="/curator/" class="btn btn-ghost btn-sm">← Дашборд</a>
+    <h1 style="font-size:1.4rem;font-weight:800;flex:1">Верификация компаний</h1>
+    <form method="get" style="display:flex;gap:8px">
+      <input type="text" name="q" class="form-control" placeholder="Поиск..." value="{{ q }}" style="max-width:200px">
+      <select name="status" class="form-control" style="max-width:160px" onchange="this.form.submit()">
+        <option value="">Все статусы</option>
+        {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-ghost">Найти</button>
+    </form>
+  </div>
+
+  {% if companies %}
+  <div style="display:flex;flex-direction:column;gap:16px">
+    {% for company in companies %}
+    <div class="card">
+      <div class="card-body">
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:240px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span style="font-size:1.5rem">🏢</span>
+              <div>
+                <div style="font-weight:700;font-size:1.05rem">{{ company.name }}</div>
+                <div style="font-size:0.82rem;color:var(--gray-500)">{{ company.get_industry_display }}</div>
+              </div>
+              <span class="badge {% if company.status == 'verified' %}badge-verified{% elif company.status == 'pending' %}badge-pending{% else %}badge-rejected{% endif %}">
+                {{ company.get_status_display }}
+              </span>
+            </div>
+
+            <div style="font-size:0.88rem;color:var(--gray-600);display:flex;flex-direction:column;gap:4px">
+              <div>👤 <strong>Владелец:</strong> {{ company.owner.email }}</div>
+              {% if company.corporate_email %}
+                <div>📧 <strong>Корп. почта:</strong> {{ company.corporate_email }}</div>
+              {% endif %}
+              {% if company.inn %}
+                <div>🔢 <strong>ИНН/БИН:</strong> {{ company.inn }}</div>
+              {% endif %}
+              {% if company.website %}
+                <div>🌐 <a href="{{ company.website }}" target="_blank">{{ company.website }}</a></div>
+              {% endif %}
+              <div>📅 Зарегистрирована: {{ company.created_at|date:"d.m.Y" }}</div>
+            </div>
+
+            {% if company.description %}
+            <div style="margin-top:10px;font-size:0.88rem;color:var(--gray-500)">{{ company.description|truncatechars:200 }}</div>
+            {% endif %}
+          </div>
+
+          {% if company.status == 'pending' %}
+          <form method="post" action="/curator/companies/{{ company.pk }}/verify/"
+            style="min-width:240px;display:flex;flex-direction:column;gap:8px;background:var(--gray-50);padding:16px;border-radius:var(--radius-sm)">
+            {% csrf_token %}
+            <label class="form-label" style="margin-bottom:0">Примечание куратора</label>
+            <textarea name="note" class="form-control" rows="2"
+              placeholder="Причина отклонения или комментарий..."></textarea>
+            <div style="display:flex;gap:8px">
+              <button type="submit" name="action" value="verify" class="btn btn-secondary btn-sm" style="flex:1">✅ Верифицировать</button>
+              <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm" style="flex:1">❌ Отклонить</button>
+            </div>
+          </form>
+          {% else %}
+          <div style="display:flex;flex-direction:column;gap:8px">
+            {% if company.verification_note %}
+              <div style="font-size:0.85rem;color:var(--gray-600);background:var(--gray-50);padding:10px;border-radius:var(--radius-sm)">
+                <strong>Примечание:</strong> {{ company.verification_note }}
+              </div>
+            {% endif %}
+            <form method="post" action="/curator/companies/{{ company.pk }}/verify/">
+              {% csrf_token %}
+              <input type="hidden" name="note" value="">
+              {% if company.status == 'verified' %}
+                <button type="submit" name="action" value="reject" class="btn btn-ghost btn-sm">Отозвать верификацию</button>
+              {% else %}
+                <button type="submit" name="action" value="verify" class="btn btn-ghost btn-sm">Верифицировать</button>
+              {% endif %}
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">🏢</div>
+    <h3>Компании не найдены</h3>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

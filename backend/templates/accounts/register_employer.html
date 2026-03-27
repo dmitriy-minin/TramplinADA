@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Регистрация работодателя — Трамплин{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card" style="max-width:560px">
+    <div style="text-align:center;margin-bottom:4px"><span style="font-size:2.5rem">🏢</span></div>
+    <h1 style="text-align:center">Регистрация работодателя</h1>
+    <p class="subtitle" style="text-align:center">После регистрации мы верифицируем компанию в течение 24 часов</p>
+
+    <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:24px;font-size:0.88rem;color:var(--primary-dark)">
+      🔐 <strong>Верификация:</strong> для подтверждения статуса компании укажите корпоративную почту и/или ИНН/БИН. Куратор проверит данные.
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--gray-700)">👤 Данные аккаунта</h3>
+      <div class="form-group">
+        <label class="form-label">Email (личный) <span class="req">*</span></label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="form-error">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ваше имя / роль <span class="req">*</span></label>
+        {{ form.display_name }}
+        {% if form.display_name.errors %}<div class="form-error">{{ form.display_name.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Пароль <span class="req">*</span></label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<div class="form-error">{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Повторите пароль <span class="req">*</span></label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <h3 style="font-size:1rem;font-weight:700;margin:24px 0 16px;color:var(--gray-700)">🏢 Данные компании</h3>
+      <div class="form-group">
+        <label class="form-label">Название компании <span class="req">*</span></label>
+        {{ form.company_name }}
+        {% if form.company_name.errors %}<div class="form-error">{{ form.company_name.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Корпоративная почта <span class="req">*</span></label>
+        {{ form.corporate_email }}
+        <div class="form-hint">{{ form.corporate_email.help_text }}</div>
+        {% if form.corporate_email.errors %}<div class="form-error">{{ form.corporate_email.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">ИНН / БИН</label>
+        {{ form.inn }}
+        {% if form.inn.errors %}<div class="form-error">{{ form.inn.errors.0 }}</div>{% endif %}
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert--error mb-2">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:8px">Зарегистрироваться</button>
+    </form>
+
+    <p style="text-align:center;margin-top:20px;color:var(--gray-500);font-size:0.9rem">
+      Уже есть аккаунт? <a href="/auth/login/">Войти</a>
+    </p>
+    <p style="text-align:center;margin-top:8px;font-size:0.85rem">
+      <a href="/auth/register/">← Назад к выбору роли</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

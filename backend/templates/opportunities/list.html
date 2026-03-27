@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Вакансии и возможности — Трамплин{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<!-- Search header -->
+<div class="search-section">
+  <div class="container">
+    <form method="get" id="filterForm">
+      <div class="search-bar">
+        <input type="text" name="q" class="form-control" placeholder="🔍 Поиск по вакансиям, компаниям..." value="{{ q }}">
+        <select name="opp_type" class="form-control">
+          <option value="">Все типы</option>
+          {% for val, label in type_choices %}
+            <option value="{{ val }}" {% if opp_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <select name="work_format" class="form-control">
+          <option value="">Любой формат</option>
+          {% for val, label in format_choices %}
+            <option value="{{ val }}" {% if work_format == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="city" class="form-control" placeholder="🏙 Город" value="{{ city }}" style="max-width:140px">
+        <input type="number" name="salary_min" class="form-control" placeholder="💰 Зарплата от" value="{{ salary_min }}" style="max-width:160px">
+        <button type="submit" class="btn btn-primary">Найти</button>
+        {% if q or opp_type or work_format or city or salary_min or selected_tags %}
+          <a href="/opportunities/" class="btn btn-ghost">Сбросить</a>
+        {% endif %}
+      </div>
+
+      <!-- Tags filter -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center">
+        <span style="font-size:0.82rem;color:var(--gray-500);font-weight:600">Навыки:</span>
+        {% for tag in tags %}
+          <label style="cursor:pointer">
+            <input type="checkbox" name="tags" value="{{ tag.pk }}" style="display:none"
+              {% if tag.pk in selected_tags %}checked{% endif %}
+              onchange="document.getElementById('filterForm').submit()">
+            <span class="badge {% if tag.pk in selected_tags %}badge-type-vacancy{% else %}badge-gray{% endif %}"
+              style="cursor:pointer;transition:all 0.15s">{{ tag.name }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="container" style="padding-top:24px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1 style="font-size:1.4rem;font-weight:800">
+        {% if q %}Результаты: «{{ q }}»{% else %}Все возможности{% endif %}
+      </h1>
+      <p style="color:var(--gray-500);font-size:0.9rem">Найдено: {{ opportunities.paginator.count }}</p>
+    </div>
+    <div class="view-toggle">
+      <button class="view-toggle-btn active" id="btnGrid" onclick="setView('grid')">⊞ Сетка</button>
+      <button class="view-toggle-btn" id="btnList" onclick="setView('list')">☰ Список</button>
+      <button class="view-toggle-btn" id="btnMap" onclick="setView('map')">🗺 Карта</button>
+    </div>
+  </div>
+
+  <!-- Map view -->
+  <div id="viewMap" class="hidden" style="margin-bottom:24px">
+    <div id="map"></div>
+  </div>
+
+  <!-- Grid/List view -->
+  <div id="viewGrid">
+    {% if opportunities %}
+      <div class="opp-grid" id="gridContainer">
+        {% for opp in opportunities %}
+          {% include "opportunities/_card.html" with opp=opp %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="icon">🔍</div>
+        <h3>Ничего не найдено</h3>
+        <p>Попробуйте изменить параметры поиска</p>
+        <a href="/opportunities/" class="btn btn-primary" style="margin-top:16px">Сбросить фильтры</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Pagination -->
+  {% if opportunities.has_other_pages %}
+  <div class="pagination">
+    {% if opportunities.has_previous %}
+      <a href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ opportunities.previous_page_number }}" class="page-btn">‹</a>
+    {% endif %}
+    {% for num in opportunities.paginator.page_range %}
+      {% if num == opportunities.number %}
+        <button class="page-btn active">{{ num }}</button>
+      {% elif num >= opportunities.number|add:"-2" and num <= opportunities.number|add:"2" %}
+        <a href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ num }}" class="page-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if opportunities.has_next %}
+      <a href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ opportunities.next_page_number }}" class="page-btn">›</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const typeColors = { internship:'#3b82f6', vacancy:'#10b981', mentoring:'#8b5cf6', event:'#f59e0b' };
+
+function makeIcon(type) {
+  const color = typeColors[type] || '#6366f1';
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 36'><path d='M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z' fill='${color}'/><circle cx='12' cy='12' r='5' fill='white'/></svg>`;
+  return L.divIcon({ html:`<div style="width:28px;height:40px">${svg}</div>`, iconSize:[28,40], iconAnchor:[14,40], popupAnchor:[0,-42], className:'' });
+}
+
+let mapInitialized = false;
+function initMap() {
+  if (mapInitialized) return;
+  mapInitialized = true;
+  const map = L.map('map').setView([51.18, 71.45], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap', maxZoom:18 }).addTo(map);
+  const params = new URLSearchParams(window.location.search);
+  const qs = new URLSearchParams();
+  ['opp_type','work_format'].forEach(k => { if (params.get(k)) qs.set(k, params.get(k)); });
+  fetch('/api/map-markers/?' + qs.toString())
+    .then(r => r.json())
+    .then(data => {
+      data.markers.forEach(m => {
+        const marker = L.marker([m.lat,m.lng], { icon:makeIcon(m.opp_type) }).addTo(map);
+        const tags = m.tags.map(t=>`<span class="badge badge-skill" style="font-size:.7rem">${t}</span>`).join(' ');
+        marker.bindPopup(`<div class="map-popup"><h4>${m.title}</h4><div class="company">🏢 ${m.company}</div><div class="salary">💰 ${m.salary}</div><div style="margin-bottom:8px">${tags}</div><a href="${m.url}" class="btn btn-primary btn-sm">Открыть →</a></div>`);
+      });
+    });
+}
+
+function setView(view) {
+  document.getElementById('viewMap').classList.add('hidden');
+  document.getElementById('viewGrid').classList.remove('hidden');
+  document.getElementById('gridContainer') && document.getElementById('gridContainer').classList.remove('opp-list');
+  document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+
+  if (view === 'map') {
+    document.getElementById('viewMap').classList.remove('hidden');
+    document.getElementById('viewGrid').classList.add('hidden');
+    document.getElementById('btnMap').classList.add('active');
+    initMap();
+  } else if (view === 'list') {
+    document.getElementById('btnList').classList.add('active');
+    document.getElementById('gridContainer') && document.getElementById('gridContainer').classList.add('opp-list');
+  } else {
+    document.getElementById('btnGrid').classList.add('active');
+  }
+}
+</script>
+{% endblock %}

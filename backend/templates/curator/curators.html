@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Кураторы — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:32px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/curator/" class="btn btn-ghost btn-sm">← Дашборд</a>
+    <h1 style="font-size:1.4rem;font-weight:800">Управление кураторами</h1>
+    <span class="badge badge-type-vacancy">Только для администратора</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start">
+
+    <!-- Curators list -->
+    <div class="card">
+      <div class="card-header"><strong>Кураторы платформы</strong></div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Имя / Email</th>
+              <th>Организация</th>
+              <th>Должность</th>
+              <th>Роль</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for curator in curators %}
+            <tr>
+              <td>
+                <div style="font-weight:600">{{ curator.display_name }}</div>
+                <div style="font-size:0.82rem;color:var(--gray-500)">{{ curator.email }}</div>
+              </td>
+              <td style="font-size:0.88rem">
+                {% if curator.curator_profile %}{{ curator.curator_profile.university|default:"—" }}{% else %}—{% endif %}
+              </td>
+              <td style="font-size:0.88rem;color:var(--gray-500)">
+                {% if curator.curator_profile %}{{ curator.curator_profile.position|default:"—" }}{% else %}—{% endif %}
+              </td>
+              <td>
+                {% if curator.curator_profile.is_admin %}
+                  <span class="badge badge-type-vacancy">Администратор</span>
+                {% else %}
+                  <span class="badge badge-gray">Куратор</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if curator.is_active %}<span class="badge badge-verified">Активен</span>
+                {% else %}<span class="badge badge-rejected">Заблокирован</span>{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:24px">Кураторов нет</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Create curator form -->
+    <div class="card" style="position:sticky;top:80px">
+      <div class="card-header"><strong>➕ Создать куратора</strong></div>
+      <div class="card-body">
+        <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:16px;font-size:0.85rem;color:var(--primary-dark)">
+          🔐 Только администратор может создавать новые учётные записи кураторов.
+        </div>
+        <form method="post" action="/curator/curators/create/" novalidate>
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Email <span class="req">*</span></label>
+            <input type="email" name="email" class="form-control" placeholder="curator@university.kz" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Отображаемое имя</label>
+            <input type="text" name="display_name" class="form-control" placeholder="Имя Фамилия">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Пароль <span class="req">*</span></label>
+            <input type="password" name="password" class="form-control" placeholder="Минимум 8 символов" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Вуз / Организация</label>
+            <input type="text" name="university" class="form-control" placeholder="КБТУ, МУИТ...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Должность</label>
+            <input type="text" name="position" class="form-control" placeholder="Карьерный советник">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Создать куратора</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

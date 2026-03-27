@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Редактировать профиль — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container--md" style="padding-top:32px;padding-bottom:48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
+    <a href="/dashboard/applicant/" class="btn btn-ghost btn-sm">← Назад</a>
+    <h1 style="font-size:1.5rem;font-weight:800">Редактирование профиля</h1>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="card">
+      <div class="card-header"><strong>👤 Основная информация</strong></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Отображаемое имя</label>
+            {{ form.display_name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">ФИО</label>
+            {{ form.full_name }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Вуз</label>
+            {{ form.university }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Курс / Год выпуска</label>
+            {{ form.graduation_year }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">О себе</label>
+          {{ form.bio }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header"><strong>💻 Навыки и опыт</strong></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Навыки</label>
+          {{ form.skills }}
+          <div class="form-hint">Укажите через запятую: Python, Django, PostgreSQL, Git</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Опыт и проекты</label>
+          {{ form.experience }}
+          <div class="form-hint">Опишите учебные и пет-проекты, участие в хакатонах, стажировки</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header"><strong>🔗 Ссылки</strong></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">GitHub</label>
+            {{ form.github_url }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Портфолио</label>
+            {{ form.portfolio_url }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Резюме (ссылка)</label>
+          {{ form.resume_url }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header"><strong>🔒 Настройки приватности</strong></div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer">
+            {{ form.profile_public }}
+            <div>
+              <div style="font-weight:600">Открыть профиль для всех</div>
+              <div style="font-size:0.85rem;color:var(--gray-500)">Авторизованные пользователи смогут видеть ваш профиль и предлагать контакт</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer">
+            {{ form.hide_applications }}
+            <div>
+              <div style="font-weight:600">Скрыть отклики от контактов</div>
+              <div style="font-size:0.85rem;color:var(--gray-500)">Контакты не смогут видеть, на какие вакансии вы откликались</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px">
+      <button type="submit" class="btn btn-primary btn-lg">Сохранить профиль</button>
+      <a href="/dashboard/applicant/" class="btn btn-ghost btn-lg">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

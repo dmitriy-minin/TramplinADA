@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}{{ opp.title }} — {{ opp.company.name }} — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:32px;padding-bottom:48px">
+  <div style="margin-bottom:20px">
+    <a href="/opportunities/" class="btn btn-ghost btn-sm">← Все вакансии</a>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start">
+
+    <!-- Main content -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
+            <div class="opp-card-logo" style="width:64px;height:64px;font-size:2rem">
+              {% if opp.company.logo %}
+                <img src="{{ opp.company.logo.url }}" alt="{{ opp.company.name }}" style="width:100%;height:100%;object-fit:contain">
+              {% else %}🏢{% endif %}
+            </div>
+            <div style="flex:1">
+              <h1 style="font-size:1.6rem;font-weight:800;line-height:1.2;margin-bottom:6px">{{ opp.title }}</h1>
+              <div style="font-size:1.05rem;color:var(--gray-500);margin-bottom:10px">
+                <a href="#company-info" style="color:var(--primary);font-weight:600">{{ opp.company.name }}</a>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <span class="badge badge-type-{{ opp.opp_type }}">{{ opp.get_opp_type_display }}</span>
+                <span class="badge badge-format-{{ opp.work_format }}">{{ opp.get_work_format_display }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key info pills -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;padding:16px;background:var(--gray-50);border-radius:var(--radius-sm)">
+            <div>
+              <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Зарплата</div>
+              <div style="font-weight:700;color:var(--secondary-dark)">{{ opp.salary_display }}</div>
+            </div>
+            <div>
+              <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Расположение</div>
+              <div style="font-weight:600">
+                {% if opp.work_format == 'remote' or opp.work_format == 'online' %}
+                  🌐 {{ opp.city|default:opp.company.city|default:"Удалённо" }}
+                {% else %}
+                  📍 {{ opp.city|default:"" }}
+                {% endif %}
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Опубликовано</div>
+              <div style="font-weight:600">{{ opp.published_at|date:"d.m.Y" }}</div>
+            </div>
+            {% if opp.expires_at %}
+            <div>
+              <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Срок подачи</div>
+              <div style="font-weight:600">{{ opp.expires_at|date:"d.m.Y" }}</div>
+            </div>
+            {% endif %}
+            {% if opp.event_date %}
+            <div>
+              <div style="font-size:0.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Дата мероприятия</div>
+              <div style="font-weight:600">{{ opp.event_date|date:"d.m.Y H:i" }}</div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Tags -->
+          {% if opp.tags.all %}
+          <div style="margin-bottom:24px">
+            <div style="font-weight:700;margin-bottom:10px">Навыки и теги</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              {% for tag in opp.tags.all %}
+                <span class="badge {% if tag.tag_type == 'level' %}badge-level{% elif tag.tag_type == 'employment' %}badge-gray{% else %}badge-skill{% endif %}">
+                  {{ tag.name }}
+                </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Description -->
+          <div>
+            <div style="font-weight:700;font-size:1.1rem;margin-bottom:14px">Описание позиции</div>
+            <div style="color:var(--gray-700);line-height:1.8;white-space:pre-line">{{ opp.description }}</div>
+          </div>
+
+          {% if opp.address %}
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-200)">
+            <div style="font-weight:700;margin-bottom:8px">📍 Адрес</div>
+            <p style="color:var(--gray-600)">{{ opp.address }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Company info -->
+      <div class="card" id="company-info">
+        <div class="card-body">
+          <div style="font-weight:700;font-size:1.1rem;margin-bottom:16px">О компании</div>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+            <div class="opp-card-logo" style="font-size:1.8rem">🏢</div>
+            <div>
+              <div style="font-weight:700;font-size:1.05rem">{{ opp.company.name }}</div>
+              <div style="color:var(--gray-500);font-size:0.85rem">{{ opp.company.get_industry_display }}</div>
+            </div>
+          </div>
+          {% if opp.company.description %}
+            <p style="color:var(--gray-600);line-height:1.7;margin-bottom:14px">{{ opp.company.description }}</p>
+          {% endif %}
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            {% if opp.company.website %}
+              <a href="{{ opp.company.website }}" target="_blank" class="btn btn-ghost btn-sm">Сайт</a>
+            {% endif %}
+            {% if opp.company.linkedin %}
+              <a href="{{ opp.company.linkedin }}" target="_blank" class="btn btn-ghost btn-sm">LinkedIn</a>
+            {% endif %}
+            {% if opp.company.hh_url %}
+              <a href="{{ opp.company.hh_url }}" target="_blank" class="btn btn-ghost btn-sm">HeadHunter</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Similar -->
+      {% if similar %}
+      <div>
+        <h3 style="font-weight:700;margin-bottom:16px">Похожие вакансии</h3>
+        <div class="opp-grid">
+          {% for s in similar %}
+            {% include "opportunities/_card.html" with opp=s %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar apply -->
+    <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="card-body">
+          {% if user.is_authenticated and user.is_applicant %}
+            {% if user_applied %}
+              <div class="alert alert--success" style="margin-bottom:16px">
+                ✅ Вы уже откликнулись<br>
+                <small>Статус: <strong>{{ user_application.get_status_display }}</strong></small>
+              </div>
+              <button class="btn btn-ghost btn-full" disabled>Отклик отправлен</button>
+            {% else %}
+              <h3 style="font-weight:700;margin-bottom:16px">Откликнуться</h3>
+              <form method="post" action="/opportunities/{{ opp.pk }}/apply/">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label class="form-label">Сопроводительное письмо</label>
+                  {{ form.cover_letter }}
+                </div>
+                <button type="submit" class="btn btn-primary btn-full btn-lg">Отправить отклик</button>
+              </form>
+            {% endif %}
+            <form method="post" action="/opportunities/{{ opp.pk }}/favorite/" style="margin-top:10px">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-full">❤️ В избранное</button>
+            </form>
+          {% elif user.is_authenticated %}
+            <div class="alert alert--info">Только соискатели могут откликаться на вакансии</div>
+          {% else %}
+            <h3 style="font-weight:700;margin-bottom:12px">Откликнуться</h3>
+            <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:16px">Войдите или зарегистрируйтесь, чтобы откликнуться</p>
+            <a href="/auth/login/?next=/opportunities/{{ opp.pk }}/" class="btn btn-primary btn-full">Войти</a>
+            <a href="/auth/register/?role=applicant" class="btn btn-ghost btn-full" style="margin-top:8px">Зарегистрироваться</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Contacts card -->
+      {% if opp.contact_email or opp.contact_phone or opp.external_url %}
+      <div class="card">
+        <div class="card-body">
+          <div style="font-weight:700;margin-bottom:12px">Контакты</div>
+          {% if opp.contact_email %}
+            <div style="font-size:0.9rem;margin-bottom:8px">📧 <a href="mailto:{{ opp.contact_email }}">{{ opp.contact_email }}</a></div>
+          {% endif %}
+          {% if opp.contact_phone %}
+            <div style="font-size:0.9rem;margin-bottom:8px">📞 {{ opp.contact_phone }}</div>
+          {% endif %}
+          {% if opp.external_url %}
+            <a href="{{ opp.external_url }}" target="_blank" class="btn btn-ghost btn-sm btn-full" style="margin-top:8px">Открыть на сайте компании →</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
