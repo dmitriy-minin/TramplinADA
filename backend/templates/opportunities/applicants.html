@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tramplin_tags %}
 {% block title %}Отклики — {{ opp.title }} — Трамплин{% endblock %}
 
 {% block content %}
@@ -43,8 +44,8 @@
 
           {% if app.applicant.skills %}
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
-            {% for skill in app.applicant.skills.split(',') %}
-              <span class="badge badge-skill" style="font-size:0.75rem">{{ skill|trim }}</span>
+            {% for skill in app.applicant.skills|split_skills %}
+              <span class="badge badge-skill" style="font-size:0.75rem">{{ skill }}</span>
             {% endfor %}
           </div>
           {% endif %}

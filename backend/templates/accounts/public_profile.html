@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tramplin_tags %}
 {% block title %}{{ profile_user.display_name }} — Трамплин{% endblock %}
 
 {% block content %}
@@ -43,8 +44,8 @@
         <div class="card-body">
           <div style="font-weight:700;margin-bottom:10px">💻 Навыки</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
-            {% for skill in profile_user.skills.split(',') %}
-              <span class="badge badge-skill">{{ skill|trim }}</span>
+            {% for skill in profile_user.skills|split_skills %}
+              <span class="badge badge-skill">{{ skill }}</span>
             {% endfor %}
           </div>
         </div>

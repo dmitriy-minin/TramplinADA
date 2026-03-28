@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tramplin_tags %}
 {% block title %}Пользователь {{ target.display_name }} — Куратор{% endblock %}
 
 {% block content %}
@@ -54,8 +55,8 @@
         <div style="font-weight:700;margin-bottom:12px">Навыки</div>
         {% if target.skills %}
           <div style="display:flex;flex-wrap:wrap;gap:6px">
-            {% for skill in target.skills.split(',') %}
-              <span class="badge badge-skill">{{ skill|trim }}</span>
+            {% for skill in target.skills|split_skills %}
+              <span class="badge badge-skill">{{ skill }}</span>
             {% endfor %}
           </div>
         {% else %}
