@@ -517,6 +517,9 @@ tr:hover td { background: var(--gray-50); }
 .text-danger { color: var(--danger); }
 .hidden { display: none !important; }
 
-/* Map marker popup */
-.leaflet-popup-content-wrapper { border-radius: var(--radius) !important; box-shadow: var(--shadow-lg) !important; }
-.leaflet-popup-content { margin: 16px !important; }
+/* Map popup — MapLibre GL */
+.maplibregl-popup-content { border-radius: var(--radius) !important; box-shadow: var(--shadow-lg) !important; padding: 16px !important; font-family: var(--font) !important; min-width: 200px; }
+.maplibregl-popup-close-button { font-size: 1.2rem; color: var(--gray-400); padding: 4px 8px; }
+.map-popup h4 { font-weight: 700; margin: 0 0 4px; font-size: 0.95rem; }
+.map-popup .company { color: var(--gray-500); font-size: 0.85rem; margin-bottom: 4px; }
+.map-popup .salary { font-weight: 700; color: var(--secondary-dark); margin-bottom: 8px; }

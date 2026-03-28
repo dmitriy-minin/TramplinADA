@@ -2,10 +2,6 @@
 {% load static %}
 {% block title %}Вакансии и возможности — Трамплин{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-{% endblock %}
-
 {% block content %}
 <!-- Search header -->
 <div class="search-section">
@@ -110,34 +106,72 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script>
 const typeColors = { internship:'#3b82f6', vacancy:'#10b981', mentoring:'#8b5cf6', event:'#f59e0b' };
 
-function makeIcon(type) {
+function makePinEl(type) {
   const color = typeColors[type] || '#6366f1';
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 36'><path d='M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z' fill='${color}'/><circle cx='12' cy='12' r='5' fill='white'/></svg>`;
-  return L.divIcon({ html:`<div style="width:28px;height:40px">${svg}</div>`, iconSize:[28,40], iconAnchor:[14,40], popupAnchor:[0,-42], className:'' });
+  const el = document.createElement('div');
+  el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="28" height="40"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="${color}"/><circle cx="12" cy="12" r="5" fill="white"/></svg>`;
+  el.style.cssText = 'cursor:pointer;width:28px;height:40px';
+  return el;
 }
 
-let mapInitialized = false;
+let mapInstance = null;
+
 function initMap() {
-  if (mapInitialized) return;
-  mapInitialized = true;
-  const map = L.map('map').setView([51.18, 71.45], 5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap', maxZoom:18 }).addTo(map);
-  const params = new URLSearchParams(window.location.search);
-  const qs = new URLSearchParams();
-  ['opp_type','work_format'].forEach(k => { if (params.get(k)) qs.set(k, params.get(k)); });
-  fetch('/api/map-markers/?' + qs.toString())
-    .then(r => r.json())
-    .then(data => {
-      data.markers.forEach(m => {
-        const marker = L.marker([m.lat,m.lng], { icon:makeIcon(m.opp_type) }).addTo(map);
-        const tags = m.tags.map(t=>`<span class="badge badge-skill" style="font-size:.7rem">${t}</span>`).join(' ');
-        marker.bindPopup(`<div class="map-popup"><h4>${m.title}</h4><div class="company">🏢 ${m.company}</div><div class="salary">💰 ${m.salary}</div><div style="margin-bottom:8px">${tags}</div><a href="${m.url}" class="btn btn-primary btn-sm">Открыть →</a></div>`);
-      });
-    });
+  if (mapInstance) return;
+
+  mapInstance = new maplibregl.Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sources: {
+        'osm': {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        }
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+    },
+    center: [71.45, 51.18],
+    zoom: 3.5,
+  });
+
+  const popup = new maplibregl.Popup({ closeButton: true, maxWidth: '300px' });
+
+  mapInstance.on('load', function () {
+    const params = new URLSearchParams(window.location.search);
+    const qs = new URLSearchParams();
+    ['opp_type', 'work_format'].forEach(k => { if (params.get(k)) qs.set(k, params.get(k)); });
+
+    fetch('/api/map-markers/?' + qs.toString())
+      .then(r => r.json())
+      .then(data => {
+        data.markers.forEach(m => {
+          const el = makePinEl(m.opp_type);
+          const tags = m.tags.map(t =>
+            `<span class="badge badge-skill" style="font-size:.7rem">${t}</span>`
+          ).join(' ');
+
+          el.addEventListener('click', () => {
+            popup
+              .setLngLat([m.lng, m.lat])
+              .setHTML(`<div class="map-popup"><h4>${m.title}</h4><div class="company">🏢 ${m.company}</div><div class="salary">💰 ${m.salary}</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${tags}</div><a href="${m.url}" class="btn btn-primary btn-sm">Открыть →</a></div>`)
+              .addTo(mapInstance);
+          });
+
+          new maplibregl.Marker({ element: el })
+            .setLngLat([m.lng, m.lat])
+            .addTo(mapInstance);
+        });
+      })
+      .catch(() => {});
+  });
 }
 
 function setView(view) {
@@ -151,6 +185,7 @@ function setView(view) {
     document.getElementById('viewGrid').classList.add('hidden');
     document.getElementById('btnMap').classList.add('active');
     initMap();
+    setTimeout(() => mapInstance && mapInstance.resize(), 50);
   } else if (view === 'list') {
     document.getElementById('btnList').classList.add('active');
     document.getElementById('gridContainer') && document.getElementById('gridContainer').classList.add('opp-list');

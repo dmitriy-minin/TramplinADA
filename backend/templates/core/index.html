@@ -3,10 +3,6 @@
 
 {% block title %}Трамплин — Карьерная платформа для IT{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-{% endblock %}
-
 {% block content %}
 <!-- Hero -->
 <section class="hero">
@@ -175,7 +171,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script>
 // View toggle
 function showMap() {
@@ -183,7 +180,7 @@ function showMap() {
   document.getElementById('listView').classList.add('hidden');
   document.getElementById('btnMap').classList.add('active');
   document.getElementById('btnList').classList.remove('active');
-  if (window._map) window._map.invalidateSize();
+  if (window._map) window._map.resize();
 }
 function showList() {
   document.getElementById('mapView').classList.add('hidden');
@@ -192,53 +189,81 @@ function showList() {
   document.getElementById('btnMap').classList.remove('active');
 }
 
-// Map
 const typeColors = {
   internship: '#3b82f6',
-  vacancy: '#10b981',
-  mentoring: '#8b5cf6',
-  event: '#f59e0b',
+  vacancy:    '#10b981',
+  mentoring:  '#8b5cf6',
+  event:      '#f59e0b',
 };
 
-function makeIcon(type) {
+function makePinEl(type) {
   const color = typeColors[type] || '#6366f1';
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 36'><path d='M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z' fill='${color}'/><circle cx='12' cy='12' r='5' fill='white'/></svg>`;
-  return L.divIcon({
-    html: `<div style="width:28px;height:40px">${svg}</div>`,
-    iconSize: [28, 40],
-    iconAnchor: [14, 40],
-    popupAnchor: [0, -42],
-    className: '',
-  });
+  const el = document.createElement('div');
+  el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="28" height="40">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="${color}"/>
+    <circle cx="12" cy="12" r="5" fill="white"/>
+  </svg>`;
+  el.style.cssText = 'cursor:pointer;width:28px;height:40px';
+  return el;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  const map = L.map('map').setView([51.18, 71.45], 5);
+document.addEventListener('DOMContentLoaded', function () {
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sources: {
+        'osm': {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        }
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+    },
+    center: [71.45, 51.18],
+    zoom: 3.5,
+  });
   window._map = map;
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 18,
-  }).addTo(map);
 
-  fetch('/api/map-markers/')
-    .then(r => r.json())
-    .then(data => {
-      data.markers.forEach(m => {
-        const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.opp_type) }).addTo(map);
-        const tags = m.tags.map(t => `<span class="badge badge-skill" style="font-size:0.7rem">${t}</span>`).join(' ');
-        marker.bindPopup(`
-          <div class="map-popup">
-            <h4>${m.title}</h4>
-            <div class="company">🏢 ${m.company}</div>
-            <div class="salary">💰 ${m.salary}</div>
-            <div style="margin-bottom:8px;font-size:0.8rem;color:#6b7280">📍 ${m.city || ''} · ${m.opp_type_display}</div>
-            <div style="margin-bottom:10px">${tags}</div>
-            <a href="${m.url}" class="btn btn-primary btn-sm" style="display:inline-flex">Подробнее →</a>
-          </div>
-        `);
-      });
-    })
-    .catch(() => {});
+  const popup = new maplibregl.Popup({
+    closeButton: true,
+    maxWidth: '300px',
+  });
+
+  map.on('load', function () {
+    fetch('/api/map-markers/')
+      .then(r => r.json())
+      .then(data => {
+        data.markers.forEach(m => {
+          const el = makePinEl(m.opp_type);
+          const tags = m.tags.map(t =>
+            `<span class="badge badge-skill" style="font-size:.7rem">${t}</span>`
+          ).join(' ');
+
+          el.addEventListener('click', () => {
+            popup
+              .setLngLat([m.lng, m.lat])
+              .setHTML(`
+                <div class="map-popup">
+                  <h4>${m.title}</h4>
+                  <div class="company">🏢 ${m.company}</div>
+                  <div class="salary">💰 ${m.salary}</div>
+                  <div style="font-size:.8rem;color:#6b7280;margin-bottom:8px">📍 ${m.city || ''} · ${m.opp_type_display}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${tags}</div>
+                  <a href="${m.url}" class="btn btn-primary btn-sm" style="display:inline-flex">Подробнее →</a>
+                </div>`)
+              .addTo(map);
+          });
+
+          new maplibregl.Marker({ element: el })
+            .setLngLat([m.lng, m.lat])
+            .addTo(map);
+        });
+      })
+      .catch(() => {});
+  });
 });
 </script>
 {% endblock %}
