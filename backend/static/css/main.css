@@ -518,8 +518,20 @@ tr:hover td { background: var(--gray-50); }
 .hidden { display: none !important; }
 
 /* Map popup — MapLibre GL */
-.maplibregl-popup-content { border-radius: var(--radius) !important; box-shadow: var(--shadow-lg) !important; padding: 16px !important; font-family: var(--font) !important; min-width: 200px; }
-.maplibregl-popup-close-button { font-size: 1.2rem; color: var(--gray-400); padding: 4px 8px; }
-.map-popup h4 { font-weight: 700; margin: 0 0 4px; font-size: 0.95rem; }
-.map-popup .company { color: var(--gray-500); font-size: 0.85rem; margin-bottom: 4px; }
-.map-popup .salary { font-weight: 700; color: var(--secondary-dark); margin-bottom: 8px; }
+.maplibregl-popup-content {
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18) !important;
+  padding: 16px !important;
+  font-family: var(--font) !important;
+  min-width: 220px;
+  border: none !important;
+}
+.maplibregl-popup-tip { border-top-color: #fff !important; }
+.maplibregl-popup-close-button {
+  font-size: 1.3rem;
+  color: var(--gray-400);
+  padding: 4px 10px;
+  line-height: 1;
+}
+.maplibregl-popup-close-button:hover { color: var(--gray-700); background: none; }
+.tramplin-popup .maplibregl-popup-content { padding: 16px 18px !important; }

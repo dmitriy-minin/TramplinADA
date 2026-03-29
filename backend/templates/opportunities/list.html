@@ -154,19 +154,44 @@ function initMap() {
       .then(data => {
         data.markers.forEach(m => {
           const el = makePinEl(m.opp_type);
-          const tags = m.tags.map(t =>
-            `<span class="badge badge-skill" style="font-size:.7rem">${t}</span>`
-          ).join(' ');
 
-          el.addEventListener('click', () => {
-            popup
-              .setLngLat([m.lng, m.lat])
-              .setHTML(`<div class="map-popup"><h4>${m.title}</h4><div class="company">🏢 ${m.company}</div><div class="salary">💰 ${m.salary}</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${tags}</div><a href="${m.url}" class="btn btn-primary btn-sm">Открыть →</a></div>`)
-              .addTo(mapInstance);
-          });
+          const tags = m.tags.length
+            ? m.tags.map(t => `<span style="display:inline-block;background:#e0e7ff;color:#4338ca;border-radius:100px;padding:2px 8px;font-size:11px;font-weight:600;margin:2px">${t}</span>`).join('')
+            : '';
+
+          const salaryHtml = m.salary && m.salary !== 'По договорённости'
+            ? `<div style="font-weight:700;color:#059669;font-size:14px;margin-bottom:6px">💰 ${m.salary}</div>`
+            : '';
+
+          const typeLabel = {
+            internship: '🎓 Стажировка',
+            vacancy:    '💼 Вакансия',
+            mentoring:  '🤝 Менторство',
+            event:      '📅 Мероприятие',
+          }[m.opp_type] || m.opp_type_display;
+
+          const popup = new maplibregl.Popup({
+            offset: [0, -36],
+            maxWidth: '280px',
+            className: 'tramplin-popup',
+          }).setHTML(`
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:4px 0">
+              <div style="font-size:11px;font-weight:600;color:#6366f1;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${typeLabel}</div>
+              <div style="font-weight:700;font-size:15px;color:#111827;line-height:1.3;margin-bottom:4px">${m.title}</div>
+              <div style="color:#6b7280;font-size:13px;margin-bottom:4px">🏢 ${m.company}</div>
+              <div style="color:#6b7280;font-size:12px;margin-bottom:6px">📍 ${m.city || 'Удалённо'}</div>
+              ${salaryHtml}
+              ${tags ? `<div style="margin-bottom:10px">${tags}</div>` : ''}
+              <a href="${m.url}"
+                style="display:block;background:#6366f1;color:#fff;text-align:center;padding:8px 0;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;margin-top:4px"
+                onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">
+                Открыть вакансию →
+              </a>
+            </div>`);
 
           new maplibregl.Marker({ element: el })
             .setLngLat([m.lng, m.lat])
+            .setPopup(popup)
             .addTo(mapInstance);
         });
       })
