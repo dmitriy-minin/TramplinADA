@@ -35,7 +35,8 @@
         <li><a href="#favorites"><span class="icon">❤️</span> Избранное</a></li>
         <li><a href="#contacts"><span class="icon">👥</span> Контакты</a></li>
         <li><a href="/dashboard/applicant/profile/"><span class="icon">✏️</span> Редактировать профиль</a></li>
-        <li><a href="/opportunities/"><span class="icon">🔍</span> Найти вакансии</a></li>
+        <li><a href="/dashboard/applicant/catalog/"><span class="icon">🔍</span> Найти вакансии</a></li>
+        <li><a href="/dashboard/applicant/catalog/" {% if '/catalog/' in request.path %}class="active"{% endif %}><span class="icon">👥</span> Каталог специалистов</a></li>
       </ul>
     </div>
 

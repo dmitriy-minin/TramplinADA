@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load tramplin_tags %}
+{% block title %}Каталог специалистов — Трамплин{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:32px;padding-bottom:48px">
+
+  <div style="margin-bottom:24px">
+    <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:6px">👥 Каталог специалистов</h1>
+    <p style="color:var(--gray-500)">Находите коллег, добавляйте в контакты, рекомендуйте друг друга на вакансии</p>
+  </div>
+
+  <!-- Search bar -->
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
+    <input type="text" name="q" class="form-control" placeholder="🔍 Имя, навык, описание..."
+      value="{{ q }}" style="flex:1;min-width:200px">
+    <input type="text" name="skill" class="form-control" placeholder="💻 Навык (Python, React...)"
+      value="{{ skill }}" style="max-width:200px">
+    <input type="text" name="university" class="form-control" placeholder="🎓 Вуз"
+      value="{{ university }}" style="max-width:180px">
+    <button type="submit" class="btn btn-primary">Найти</button>
+    {% if q or skill or university %}
+      <a href="/dashboard/applicant/catalog/" class="btn btn-ghost">Сбросить</a>
+    {% endif %}
+  </form>
+
+  {% if profiles %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
+      {% for profile in profiles %}
+      <div class="card" style="padding:0">
+        <div style="padding:20px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+            <div class="profile-avatar" style="width:52px;height:52px;font-size:1.3rem;flex-shrink:0">
+              {{ profile.display_name|first|upper }}
+            </div>
+            <div style="flex:1;min-width:0">
+              <a href="/profile/{{ profile.pk }}/"
+                style="font-weight:700;font-size:1rem;color:var(--gray-900);display:block;
+                       overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                {{ profile.display_name }}
+              </a>
+              {% if profile.university %}
+                <div style="font-size:0.82rem;color:var(--gray-500);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                  🎓 {{ profile.university }}{% if profile.graduation_year %}, {{ profile.graduation_year }}{% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if profile.skills %}
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+              {% for s in profile.skills|split_skills %}
+                <span class="badge badge-skill" style="font-size:0.72rem">{{ s }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if profile.bio %}
+            <p style="font-size:0.85rem;color:var(--gray-600);line-height:1.5;margin-bottom:12px;
+                      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+              {{ profile.bio }}
+            </p>
+          {% endif %}
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <a href="/profile/{{ profile.pk }}/" class="btn btn-ghost btn-sm">Профиль</a>
+
+            {% if user.is_authenticated and user.is_applicant %}
+              {% if profile.pk in my_contacts %}
+                <span class="badge badge-verified" style="font-size:0.78rem">✓ В контактах</span>
+              {% elif profile.pk in pending_sent %}
+                <span class="badge badge-pending" style="font-size:0.78rem">Заявка отправлена</span>
+              {% else %}
+                <form method="post" action="/auth/contact/{{ profile.pk }}/request/" style="display:inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary btn-sm">+ Добавить</button>
+                </form>
+              {% endif %}
+            {% endif %}
+
+            {% if profile.github_url %}
+              <a href="{{ profile.github_url }}" target="_blank"
+                style="font-size:0.8rem;color:var(--gray-500)">GitHub →</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">👥</div>
+      <h3>Специалисты не найдены</h3>
+      <p>Попробуйте изменить параметры поиска или <a href="/dashboard/applicant/catalog/">сбросить фильтры</a></p>
+    </div>
+  {% endif %}
+
+  {% if not user.is_authenticated %}
+    <div class="alert alert--info" style="margin-top:24px">
+      <span>Войдите, чтобы добавлять специалистов в контакты и видеть их карьерные интересы.</span>
+      <a href="/auth/login/" class="btn btn-primary btn-sm" style="margin-left:12px">Войти</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

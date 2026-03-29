@@ -161,3 +161,43 @@ def accept_contact(request, pk):
         sender.contact_requests.remove(request.user)
         messages.success(request, f"{sender.display_name} добавлен в контакты.")
     return redirect("applicant:dashboard")
+
+
+@login_required
+def applicants_catalog(request):
+    """Каталог соискателей для нетворкинга."""
+    from django.db.models import Q
+    qs = User.objects.filter(
+        role=User.ROLE_APPLICANT,
+        is_active=True,
+        profile_public=True,
+    ).exclude(pk=request.user.pk)
+
+    q = request.GET.get('q', '').strip()
+    skill = request.GET.get('skill', '').strip()
+    university = request.GET.get('university', '').strip()
+
+    if q:
+        qs = qs.filter(
+            Q(display_name__icontains=q) |
+            Q(skills__icontains=q) |
+            Q(bio__icontains=q)
+        )
+    if skill:
+        qs = qs.filter(skills__icontains=skill)
+    if university:
+        qs = qs.filter(university__icontains=university)
+
+    qs = qs.order_by('-date_joined')
+
+    my_contacts = set(request.user.contacts.values_list('pk', flat=True)) if request.user.is_applicant else set()
+    pending_sent = set(request.user.contact_requests.values_list('pk', flat=True)) if request.user.is_applicant else set()
+
+    return render(request, 'accounts/catalog.html', {
+        'profiles': qs,
+        'q': q,
+        'skill': skill,
+        'university': university,
+        'my_contacts': my_contacts,
+        'pending_sent': pending_sent,
+    })
