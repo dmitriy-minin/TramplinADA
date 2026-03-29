@@ -60,11 +60,15 @@ python manage.py runserver
 | Администратор (куратор) | admin@tramplin.kz | Admin123!@# |
 
 После `create_demo_data` (дополнительно):
+Для всех тестовых аккаунтов пароль "Demo12345!".
 
 | Роль | Email | Пароль |
 |---|---|---|
-| Работодатель | employer1@demo.tramplin.kz | Demo12345! |
-| Соискатель | student@demo.tramplin.kz | Demo12345! |
+| Работодатель | hr@kaspi-demo.kz | Demo12345! |
+| Соискатель | aiya.bekova@demo.kz | Demo12345! |
+
+Список работодателей: hr@kaspi-demo.kz, hr@kolesa-demo.kz, hr@epam-demo.kz, hr@smartec-demo.kz, hr@jusan-demo.kz, hr@startupkz-demo.kz.<br>
+Список соискателей: aiya.bekova@demo.kz, arman.seitkali@demo.kz, dana.nurlan@demo.kz, timur.rakhimov@demo.kz, zhansaya.omar@demo.kz, bekzat.akhmet@demo.kz, alina.kim@demo.kz, ruslan.dyusembaev@demo.kz.
 
 ---
 
