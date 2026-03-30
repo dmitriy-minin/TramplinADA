@@ -31,6 +31,9 @@ class User(AbstractUser):
     profile_public = models.BooleanField("Профиль открыт всем", default=False)
     hide_applications = models.BooleanField("Скрыть отклики", default=False)
 
+    # Location
+    city = models.CharField("Город", max_length=100, blank=True)
+
     # Contacts (friends/network)
     contacts = models.ManyToManyField(
         "self",

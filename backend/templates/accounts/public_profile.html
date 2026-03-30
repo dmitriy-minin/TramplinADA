@@ -15,6 +15,9 @@
         <div style="color:var(--gray-500)">{{ profile_user.full_name }}</div>
       {% endif %}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        {% if profile_user.city %}
+          <span style="font-size:0.9rem;color:var(--gray-500)">📍 {{ profile_user.city }}</span>
+        {% endif %}
         {% if profile_user.university %}
           <span style="font-size:0.9rem;color:var(--gray-500)">🎓 {{ profile_user.university }}</span>
         {% endif %}

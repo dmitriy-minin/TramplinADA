@@ -122,7 +122,7 @@ class ApplicantProfileForm(forms.ModelForm):
         model = User
         fields = [
             "display_name", "full_name", "university", "graduation_year",
-            "bio", "skills", "experience", "github_url", "portfolio_url",
+            "city", "bio", "skills", "experience", "github_url", "portfolio_url",
             "resume_url", "profile_public", "hide_applications",
         ]
         widgets = {
@@ -130,6 +130,7 @@ class ApplicantProfileForm(forms.ModelForm):
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "university": forms.TextInput(attrs={"class": "form-control"}),
             "graduation_year": forms.NumberInput(attrs={"class": "form-control", "min": 2020, "max": 2035}),
+            "city": forms.TextInput(attrs={"class": "form-control", "placeholder": "Алматы, Астана..."}),
             "bio": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
             "skills": forms.TextInput(attrs={"class": "form-control", "placeholder": "Python, Django, PostgreSQL, Git"}),
             "experience": forms.Textarea(attrs={"class": "form-control", "rows": 5}),

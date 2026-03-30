@@ -182,14 +182,14 @@ OPPORTUNITIES = [
 
 APPLICANTS = [
     {"email": "aiya.bekova@demo.kz", "display_name": "Айя Бекова",
-     "full_name": "Бекова Айя Нурлановна", "university": "КБТУ", "graduation_year": 2025,
+     "full_name": "Бекова Айя Нурлановна", "university": "КБТУ", "graduation_year": 2025, "city": "Алматы", "city": "Алматы",
      "skills": "Python, Django, FastAPI, PostgreSQL, Git, Docker, Linux",
      "bio": "Студентка 4 курса, направление «Компьютерные науки». Ищу стажировку или первую работу в продуктовой компании.",
      "experience": "Дипломный проект: REST API сервис на FastAPI + PostgreSQL.\nХакатон Digital Almaty 2024 — 2 место в треке AI.\nТелеграм-бот для учёта финансов.",
      "github_url": "https://github.com/aiya-bekova", "profile_public": True, "hide_applications": False},
 
     {"email": "arman.seitkali@demo.kz", "display_name": "Арман Сейткали",
-     "full_name": "Сейткали Арман Болатович", "university": "МУИТ", "graduation_year": 2024,
+     "full_name": "Сейткали Арман Болатович", "university": "МУИТ", "graduation_year": 2024, "city": "Алматы",
      "skills": "JavaScript, TypeScript, React, Vue.js, Node.js, Git, HTML, CSS",
      "bio": "Выпускник 2024. Специализируюсь на frontend. Открыт к relocate.",
      "experience": "3 лендинга на React для казахстанских стартапов.\nСистема управления задачами (React + Node.js + MongoDB).\nСтажировка в WebKaz — вёрстка шаблонов.",
@@ -197,42 +197,42 @@ APPLICANTS = [
      "portfolio_url": "https://arman.dev", "profile_public": True, "hide_applications": False},
 
     {"email": "dana.nurlan@demo.kz", "display_name": "Дана Нурланова",
-     "full_name": "Нурланова Дана Ержановна", "university": "КазНУ им. аль-Фараби", "graduation_year": 2026,
+     "full_name": "Нурланова Дана Ержановна", "university": "КазНУ им. аль-Фараби", "graduation_year": 2026, "city": "Алматы",
      "skills": "Python, Machine Learning, Pandas, NumPy, Scikit-learn, SQL, Jupyter",
      "bio": "Студентка 3 курса, мехмат. Специализируюсь на Data Science и ML.",
      "experience": "Прогнозирование временных рядов (Keras, LSTM).\nKaggle — топ-15% в соревновании по классификации.\nАнализ рынка недвижимости Алматы.",
      "github_url": "https://github.com/dana-nurlan", "profile_public": True, "hide_applications": True},
 
     {"email": "timur.rakhimov@demo.kz", "display_name": "Тимур Рахимов",
-     "full_name": "Рахимов Тимур Алмасович", "university": "Nazarbayev University", "graduation_year": 2025,
+     "full_name": "Рахимов Тимур Алмасович", "university": "Nazarbayev University", "graduation_year": 2025, "city": "Астана",
      "skills": "Java, Spring Boot, Kotlin, Android, PostgreSQL, Docker, Git, REST API",
      "bio": "Студент Computer Science. Разрабатываю Android и backend на Java/Kotlin.",
      "experience": "Android-приложение для студенческого расписания (Kotlin + Spring Boot).\nСтажировка в Kolesa (1 месяц).\nКонтрибьюции в opensource.",
      "github_url": "https://github.com/timur-rakhimov", "profile_public": True, "hide_applications": False},
 
     {"email": "zhansaya.omar@demo.kz", "display_name": "Жансая Омар",
-     "full_name": "Омар Жансая Сейткалиевна", "university": "Алматы Менеджмент Университет", "graduation_year": 2024,
+     "full_name": "Омар Жансая Сейткалиевна", "university": "Алматы Менеджмент Университет", "graduation_year": 2024, "city": "Алматы",
      "skills": "QA, Selenium, Postman, Jira, SQL, Python, Тест-кейсы, Баг-репорты",
      "bio": "Выпускница по специальности «Информационные системы». Сертификат ISTQB Foundation.",
      "experience": "Курсы QA Automation (Practicum) — Selenium + Python.\nТестирование мобильного приложения.\nСоставление тест-кейсов для e-commerce.",
      "profile_public": False, "hide_applications": True},
 
     {"email": "bekzat.akhmet@demo.kz", "display_name": "Бекзат Ахметов",
-     "full_name": "Ахметов Бекзат Ерланович", "university": "ЕНУ им. Л.Н. Гумилёва", "graduation_year": 2026,
+     "full_name": "Ахметов Бекзат Ерланович", "university": "ЕНУ им. Л.Н. Гумилёва", "graduation_year": 2026, "city": "Астана",
      "skills": "C++, Python, Linux, Bash, Git",
      "bio": "Студент 2 курса, программная инженерия. Увлекаюсь системным программированием и Linux.",
      "experience": "Реализация стека TCP/IP на C++.\nНастройка домашнего сервера (Ubuntu, Nginx, PostgreSQL).",
      "github_url": "https://github.com/bekzat-akhmet", "profile_public": True, "hide_applications": False},
 
     {"email": "alina.kim@demo.kz", "display_name": "Алина Ким",
-     "full_name": "Ким Алина Вадимовна", "university": "Университет «Туран»", "graduation_year": 2025,
+     "full_name": "Ким Алина Вадимовна", "university": "Университет «Туран»", "graduation_year": 2025, "city": "Алматы",
      "skills": "Figma, UI/UX, HTML, CSS, Adobe XD, Прототипирование, User Research",
      "bio": "Дизайнер с фокусом на UI/UX. Создаю интерфейсы для мобильных приложений и веб.",
      "experience": "Редизайн приложения для заказа еды — полный UX-цикл.\n3 коммерческих проекта на фрилансе.\nGoogle UX Design Certificate.",
      "portfolio_url": "https://alina-kim.design", "profile_public": True, "hide_applications": False},
 
     {"email": "ruslan.dyusembaev@demo.kz", "display_name": "Руслан Дюсембаев",
-     "full_name": "Дюсембаев Руслан Маратович", "university": "Satbayev University", "graduation_year": 2023,
+     "full_name": "Дюсембаев Руслан Маратович", "university": "Satbayev University", "graduation_year": 2023, "city": "Алматы",
      "skills": "Python, Django, REST API, PostgreSQL, Redis, Celery, Docker, Git, Linux",
      "bio": "Выпускник 2023, 8 месяцев коммерческой разработки. Ищу Junior+ или Middle Python Developer.",
      "experience": "8 месяцев backend в стартапе EduKZ: DRF, Celery, PostgreSQL.\nИнтеграция с Kaspi Pay API.\nSaaS-платформа для управления проектами.",
@@ -335,7 +335,7 @@ class Command(BaseCommand):
         self.stdout.write("\n👤 Соискатели:")
         for a in APPLICANTS:
             extra = {k: a.get(k, "") for k in
-                     ["full_name", "university", "graduation_year", "skills", "bio",
+                     ["full_name", "university", "graduation_year", "city", "skills", "bio",
                       "experience", "github_url", "portfolio_url", "resume_url",
                       "profile_public", "hide_applications"]}
             user = self._upsert_user(a["email"], a["display_name"], "applicant", extra)

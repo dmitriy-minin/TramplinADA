@@ -17,6 +17,9 @@
       {% if user.university %}
         <div style="color:var(--gray-500);font-size:0.82rem;margin-top:4px">🎓 {{ user.university }}</div>
       {% endif %}
+      {% if user.city %}
+        <div style="color:var(--gray-500);font-size:0.82rem">📍 {{ user.city }}</div>
+      {% endif %}
       {% if user.graduation_year %}
         <div style="color:var(--gray-500);font-size:0.82rem">Курс/год: {{ user.graduation_year }}</div>
       {% endif %}
