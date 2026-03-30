@@ -140,16 +140,24 @@ def public_profile_view(request, pk):
 def send_contact_request(request, pk):
     target = get_object_or_404(User, pk=pk)
     if target == request.user:
-        return JsonResponse({"ok": False, "msg": "Нельзя добавить себя"})
+        messages.error(request, "Нельзя добавить себя в контакты.")
+        return redirect("applicant:catalog")
     if target in request.user.contacts.all():
-        return JsonResponse({"ok": False, "msg": "Уже в контактах"})
-    # If target already sent request to me — accept
+        messages.info(request, f"{target.display_name} уже в ваших контактах.")
+        return redirect("public_profile", pk=pk)
+    # Если цель уже отправила заявку мне — принимаем сразу
     if request.user in target.contact_requests.all():
         request.user.contacts.add(target)
         target.contact_requests.remove(request.user)
-        return JsonResponse({"ok": True, "msg": "Контакт добавлен"})
-    request.user.contact_requests.add(target)
-    return JsonResponse({"ok": True, "msg": "Заявка отправлена"})
+        messages.success(request, f"Вы и {target.display_name} теперь в контактах!")
+    else:
+        request.user.contact_requests.add(target)
+        messages.success(request, f"Заявка отправлена пользователю {target.display_name}.")
+    # Вернуться туда, откуда пришли
+    next_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or "applicant:catalog"
+    if next_url.startswith("http"):
+        return redirect(next_url)
+    return redirect(next_url)
 
 
 @login_required
@@ -161,3 +169,68 @@ def accept_contact(request, pk):
         sender.contact_requests.remove(request.user)
         messages.success(request, f"{sender.display_name} добавлен в контакты.")
     return redirect("applicant:dashboard")
+
+
+@login_required
+def applicants_catalog(request):
+    """Каталог соискателей для нетворкинга."""
+    from django.db.models import Q
+    qs = User.objects.filter(
+        role=User.ROLE_APPLICANT,
+        is_active=True,
+        profile_public=True,
+    ).exclude(pk=request.user.pk)
+
+    q = request.GET.get('q', '').strip()
+    skill = request.GET.get('skill', '').strip()
+    university = request.GET.get('university', '').strip()
+    city = request.GET.get('city', '').strip()
+    sort = request.GET.get('sort', '-date_joined')
+
+    if q:
+        qs = qs.filter(
+            Q(display_name__icontains=q) |
+            Q(skills__icontains=q) |
+            Q(bio__icontains=q)
+        )
+    if skill:
+        qs = qs.filter(skills__icontains=skill)
+    if university:
+        qs = qs.filter(university__icontains=university)
+    if city:
+        qs = qs.filter(city__icontains=city)
+
+    sort_options = {
+        "-date_joined": "Сначала новые",
+        "date_joined": "Сначала старые",
+        "display_name": "По имени А–Я",
+        "-display_name": "По имени Я–А",
+        "city": "По городу",
+        "university": "По вузу",
+    }
+    if sort not in sort_options:
+        sort = "-date_joined"
+    qs = qs.order_by(sort)
+
+    # Список уникальных городов для дропдауна
+    cities = User.objects.filter(
+        role=User.ROLE_APPLICANT,
+        is_active=True,
+        profile_public=True,
+    ).exclude(city="").values_list("city", flat=True).distinct().order_by("city")
+
+    my_contacts = set(request.user.contacts.values_list('pk', flat=True)) if request.user.is_applicant else set()
+    pending_sent = set(request.user.contact_requests.values_list('pk', flat=True)) if request.user.is_applicant else set()
+
+    return render(request, 'accounts/catalog.html', {
+        'profiles': qs,
+        'q': q,
+        'skill': skill,
+        'university': university,
+        'city': city,
+        'sort': sort,
+        'sort_options': sort_options,
+        'cities': cities,
+        'my_contacts': my_contacts,
+        'pending_sent': pending_sent,
+    })

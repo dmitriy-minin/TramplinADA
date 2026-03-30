@@ -17,6 +17,9 @@
       {% if user.university %}
         <div style="color:var(--gray-500);font-size:0.82rem;margin-top:4px">🎓 {{ user.university }}</div>
       {% endif %}
+      {% if user.city %}
+        <div style="color:var(--gray-500);font-size:0.82rem">📍 {{ user.city }}</div>
+      {% endif %}
       {% if user.graduation_year %}
         <div style="color:var(--gray-500);font-size:0.82rem">Курс/год: {{ user.graduation_year }}</div>
       {% endif %}
@@ -35,7 +38,8 @@
         <li><a href="#favorites"><span class="icon">❤️</span> Избранное</a></li>
         <li><a href="#contacts"><span class="icon">👥</span> Контакты</a></li>
         <li><a href="/dashboard/applicant/profile/"><span class="icon">✏️</span> Редактировать профиль</a></li>
-        <li><a href="/opportunities/"><span class="icon">🔍</span> Найти вакансии</a></li>
+        <li><a href="/dashboard/applicant/catalog/"><span class="icon">🔍</span> Найти вакансии</a></li>
+        <li><a href="/dashboard/applicant/catalog/" {% if '/catalog/' in request.path %}class="active"{% endif %}><span class="icon">👥</span> Каталог специалистов</a></li>
       </ul>
     </div>
 
